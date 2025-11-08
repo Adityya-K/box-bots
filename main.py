@@ -1,11 +1,11 @@
-import cv2 
+import cv2
 from ultralytics import YOLO
 import math
 import mediapipe as mp
 import time
 
 stream = cv2.VideoCapture(0)
-stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc("M", "J", "P", "G"))
 stream.set(3, 640)
 stream.set(4, 480)
 
@@ -18,7 +18,12 @@ mp_hands = mp.solutions.hands
 text = ""
 text2 = ""
 
-def print_result(result: mp.tasks.vision.GestureRecognizerResult, unused_output_image: mp.Image, timestamp_ms: int):
+
+def print_result(
+    result: mp.tasks.vision.GestureRecognizerResult,
+    unused_output_image: mp.Image,
+    timestamp_ms: int,
+):
     global text, text2
     if len(result.gestures) == 2:
         print(result.gestures[0])
@@ -28,35 +33,105 @@ def print_result(result: mp.tasks.vision.GestureRecognizerResult, unused_output_
         text = str(result.gestures[0][0].category_name)
 
 
-
-
-
 base_options = mp.tasks.BaseOptions(model_asset_path="gesture_recognizer.task")
-options = mp.tasks.vision.GestureRecognizerOptions(base_options=base_options,
-                                        running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
-                                        num_hands=2,
-                                        result_callback=print_result)
+options = mp.tasks.vision.GestureRecognizerOptions(
+    base_options=base_options,
+    running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
+    num_hands=2,
+    result_callback=print_result,
+)
 recognizer = mp.tasks.vision.GestureRecognizer.create_from_options(options)
 
 
 if not stream.isOpened():
     print("No Stream :(")
-    exit() 
+    exit()
 
-classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
-              "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
-              "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-              "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat",
-              "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup",
-              "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
-              "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed",
-              "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone",
-              "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
-              "teddy bear", "hair drier", "toothbrush"
-              ]
+classNames = [
+    "person",
+    "bicycle",
+    "car",
+    "motorbike",
+    "aeroplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic light",
+    "fire hydrant",
+    "stop sign",
+    "parking meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports ball",
+    "kite",
+    "baseball bat",
+    "baseball glove",
+    "skateboard",
+    "surfboard",
+    "tennis racket",
+    "bottle",
+    "wine glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "sofa",
+    "pottedplant",
+    "bed",
+    "diningtable",
+    "toilet",
+    "tvmonitor",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy bear",
+    "hair drier",
+    "toothbrush",
+]
 
 time_stamp = time.time_ns() // 1000000
-while (True):
+while True:
     ret, frame = stream.read()
     if not ret:
         print("No more stream")
@@ -77,14 +152,14 @@ while (True):
 
             # bounding box
             x1, y1, x2, y2 = box.xyxy[0]
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2) # convert to int values
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
 
             # put box in cam
             cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 255), 3)
 
             # confidence
-            confidence = math.ceil((box.conf[0]*100))/100
-            print("Confidence --->",confidence)
+            confidence = math.ceil((box.conf[0] * 100)) / 100
+            print("Confidence --->", confidence)
 
             # object details
             org = [x1, y1]
@@ -96,12 +171,11 @@ while (True):
             cv2.putText(frame, classNames[cls], org, font, fontScale, color, thickness)
 
     with mp_hands.Hands(
-        model_complexity=0,
-        min_detection_confidence=0.5,
-        min_tracking_confidence=0.5) as hands:
+        model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5
+    ) as hands:
         if not ret:
             print("Ignoring empty camera frame.")
-        # If loading a video, use 'break' instead of 'continue'.
+            # If loading a video, use 'break' instead of 'continue'.
             continue
 
         # To improve performance, optionally mark the image as not writeable to
@@ -121,23 +195,22 @@ while (True):
                     hand_landmarks,
                     mp_hands.HAND_CONNECTIONS,
                     mp_drawing_styles.get_default_hand_landmarks_style(),
-                    mp_drawing_styles.get_default_hand_connections_style())
+                    mp_drawing_styles.get_default_hand_connections_style(),
+                )
 
         recognizer.recognize_async(mp_image, time_stamp)
         time_stamp += 100
-        
-    org = (50, 50) # Bottom-left corner of the text (x, y)
+
+    org = (50, 50)  # Bottom-left corner of the text (x, y)
     org2 = (400, 50)
     font = cv2.FONT_HERSHEY_SIMPLEX
-    color = (0, 255, 0) # Green color in BGR format
+    color = (0, 255, 0)  # Green color in BGR format
     cv2.putText(frame, text, org, font, 1, color, 2)
     cv2.putText(frame, text2, org2, font, 1, color, 2)
-    text = text2 = ""
-
 
     cv2.imshow("Webcam", frame)
-    if cv2.waitKey(1) == ord('q'):
-        break 
+    if cv2.waitKey(1) == ord("q"):
+        break
 
 stream.release()
 cv2.destroyAllWindows()
