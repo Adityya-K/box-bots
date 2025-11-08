@@ -2,6 +2,7 @@ import cv2
 from ultralytics import YOLO
 import math
 import mediapipe as mp
+import time
 
 stream = cv2.VideoCapture(0)
 stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
@@ -13,6 +14,18 @@ model = YOLO("yolo11m.pt")
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
+
+def print_result(result: mp.tasks.vision.GestureRecognizerResult, unused_output_image: mp.Image, timestamp_ms: int):
+    print(result)
+
+
+base_options = mp.tasks.BaseOptions(model_asset_path="gesture_recognizer.task")
+options = mp.tasks.vision.GestureRecognizerOptions(base_options=base_options,
+                                        running_mode=mp.tasks.vision.RunningMode.LIVE_STREAM,
+                                        num_hands=2,
+                                        result_callback=print_result)
+recognizer = mp.tasks.vision.GestureRecognizer.create_from_options(options)
+
 
 if not stream.isOpened():
     print("No Stream :(")
@@ -30,6 +43,7 @@ classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "trai
               "teddy bear", "hair drier", "toothbrush"
               ]
 
+time_stamp = time.time_ns() // 1000000
 while (True):
     ret, frame = stream.read()
     if not ret:
@@ -87,6 +101,7 @@ while (True):
         # Draw the hand annotations on the image.
         frame.flags.writeable = True
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
@@ -95,6 +110,10 @@ while (True):
                     mp_hands.HAND_CONNECTIONS,
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style())
+
+        recognizer.recognize_async(mp_image, time_stamp)
+        time_stamp += 100
+
 
     cv2.imshow("Webcam", frame)
     if cv2.waitKey(1) == ord('q'):
