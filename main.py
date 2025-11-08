@@ -16,7 +16,29 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 def print_result(result: mp.tasks.vision.GestureRecognizerResult, unused_output_image: mp.Image, timestamp_ms: int):
-    print(result)
+    if len(result.gestures) == 2:
+        print(result.gestures[0])
+        text = str(result.gestures[0][0].category_name)
+        org = (50, 50) # Bottom-left corner of the text (x, y)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1
+        color = (0, 255, 0) # Green color in BGR format
+        thickness = 2
+        text2 = str(result.gestures[1][0].category_name)
+        org2 = (300, 50) # bottom-left corner of the text (x, y)
+        cv2.putText(frame, text, org, font, font_scale, color, thickness)
+        cv2.putText(frame, text2, org2, font, font_scale, color, thickness)
+    elif len(result.gestures) == 1:
+        text = str(result.gestures[0][0].category_name)
+        org = (50, 50) # Bottom-left corner of the text (x, y)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1
+        color = (0, 255, 0) # Green color in BGR format
+        thickness = 2
+        cv2.putText(frame, text, org, font, font_scale, color, thickness)
+
+
+
 
 
 base_options = mp.tasks.BaseOptions(model_asset_path="gesture_recognizer.task")
