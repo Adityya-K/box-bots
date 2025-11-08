@@ -1,3 +1,4 @@
 __pycache__/
 venv/
 .Identifier
+.python-version
