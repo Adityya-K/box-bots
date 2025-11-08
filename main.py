@@ -15,27 +15,17 @@ mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
+text = ""
+text2 = ""
+
 def print_result(result: mp.tasks.vision.GestureRecognizerResult, unused_output_image: mp.Image, timestamp_ms: int):
+    global text, text2
     if len(result.gestures) == 2:
         print(result.gestures[0])
         text = str(result.gestures[0][0].category_name)
-        org = (50, 50) # Bottom-left corner of the text (x, y)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 1
-        color = (0, 255, 0) # Green color in BGR format
-        thickness = 2
         text2 = str(result.gestures[1][0].category_name)
-        org2 = (300, 50) # bottom-left corner of the text (x, y)
-        cv2.putText(frame, text, org, font, font_scale, color, thickness)
-        cv2.putText(frame, text2, org2, font, font_scale, color, thickness)
     elif len(result.gestures) == 1:
         text = str(result.gestures[0][0].category_name)
-        org = (50, 50) # Bottom-left corner of the text (x, y)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 1
-        color = (0, 255, 0) # Green color in BGR format
-        thickness = 2
-        cv2.putText(frame, text, org, font, font_scale, color, thickness)
 
 
 
@@ -135,6 +125,14 @@ while (True):
 
         recognizer.recognize_async(mp_image, time_stamp)
         time_stamp += 100
+        
+    org = (50, 50) # Bottom-left corner of the text (x, y)
+    org2 = (400, 50)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    color = (0, 255, 0) # Green color in BGR format
+    cv2.putText(frame, text, org, font, 1, color, 2)
+    cv2.putText(frame, text2, org2, font, 1, color, 2)
+    text = text2 = ""
 
 
     cv2.imshow("Webcam", frame)
