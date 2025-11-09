@@ -132,7 +132,9 @@ classNames = [
 ]
 
 time_stamp = time.time_ns() // 1000000
+count = 0
 while True:
+    count += 1
     ret, frame = stream.read()
     if not ret:
         print("No more stream")
@@ -140,10 +142,10 @@ while True:
 
     results = model(frame, stream=True)
 
+    max_box = None
     for r in results:
         boxes = r.boxes
 
-        max_box = None
         max_area = 0
         for box in boxes:
             # class name
@@ -178,23 +180,34 @@ while True:
 
             cv2.putText(frame, classNames[cls], org, font, fontScale, color, thickness)
 
-        if max_box is not None:
-            x1, y1, x2, y2 = max_box.xyxy[0]
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
-            with Serial("/dev/ttyUSB0", 9600, timeout=1) as ser:
-                if (x1 + x2) / 2 > 325:
-                    ser.write(b"\xff")
-                    print("Move Left")
-                elif (x1 + x2) / 2 < 315:
-                    ser.write(b"\x77")
-                    print("Move Right")
-                else:
-                    ser.write(b"\x69")
-                    print("Stay")
+    if max_box is not None and count % 10 == 0:
+        x1, y1, x2, y2 = max_box.xyxy[0]
+        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
+        center = (x1 + x2) / 2
+        with Serial("/dev/ttyUSB0", 9600, timeout=1) as ser:
+            if center > 420:
+                ser.write(b"\xff")
+                print("Move Left")
+            elif center > 370:
+                ser.write(b"\x30")
+                print("Move Left Slow")
 
-                if text == "Open_Palm" or text2 == "Open_Palm":
-                    ser.write(b"\x01")
-                    print("SHOOT!!!!!!")
+            if center < 220:
+                ser.write(b"\x77")
+                print("Move Right Slow")
+            elif center < 270:
+                ser.write(b"\x20")
+                print("Move Right")
+
+            if center > 270 and center < 370:
+                ser.write(b"\x69")
+                print("Stay")
+
+            if (text == "Open_Palm" or text2 == "Open_Palm") and (
+                (x1 + x2) / 2 < 350 and (x1 + x2) / 2 > 290
+            ):
+                ser.write(b"\x01")
+                print("SHOOT!!!!!!")
 
     with mp_hands.Hands(
         model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5
