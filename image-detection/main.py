@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import math
 import mediapipe as mp
 import time
+from serial import Serial
 
 stream = cv2.VideoCapture(0)
 stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc("M", "J", "P", "G"))
@@ -142,6 +143,7 @@ while True:
     for r in results:
         boxes = r.boxes
 
+        first_box = True
         for box in boxes:
             # class name
             cls = int(box.cls[0])
@@ -153,6 +155,24 @@ while True:
             # bounding box
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
+
+            if first_box:
+                with Serial("/dev/ttyACM0", 9600, timeout=1) as ser:
+                    if (x1 + x2) / 2 > 325:
+                        ser.write(b"\xff")
+                        print("Move Left")
+                    elif (x1 + x2) / 2 < 315:
+                        ser.write(b"\x77")
+                        print("Move Right")
+                    else:
+                        ser.write(b"\x69")
+                        print("Stay")
+
+                    if text == "Open_Palm" or text2 == "Open_Palm":
+                        ser.write(b"\x01")
+                        print("SHOOT!!!!!!")
+
+                first_box = False
 
             # put box in cam
             cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 255), 3)
