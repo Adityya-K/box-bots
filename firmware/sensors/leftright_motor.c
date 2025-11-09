@@ -100,6 +100,12 @@ void leftright_motor_task(void *pvParameters)
             else if (incomingByte == 0x69) {
                 servo_write(0);    // Center position
             }
+            else if (incomingByte == 0x20) {
+                servo_write(-5);    // Slow left
+            }
+            else if (incomingByte == 0x30) {
+                servo_write(5);    // Slow right
+            }
             else {
                 ESP_LOGW(TAG, "Unknown command: 0x%02X", incomingByte);
             }
