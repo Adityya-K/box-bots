@@ -143,7 +143,8 @@ while True:
     for r in results:
         boxes = r.boxes
 
-        first_box = True
+        max_box = None
+        max_area = 0
         for box in boxes:
             # class name
             cls = int(box.cls[0])
@@ -155,24 +156,11 @@ while True:
             # bounding box
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
+            area = (y2 - y1) * (x2 - x1)
 
-            if first_box:
-                with Serial("/dev/ttyACM0", 9600, timeout=1) as ser:
-                    if (x1 + x2) / 2 > 325:
-                        ser.write(b"\xff")
-                        print("Move Left")
-                    elif (x1 + x2) / 2 < 315:
-                        ser.write(b"\x77")
-                        print("Move Right")
-                    else:
-                        ser.write(b"\x69")
-                        print("Stay")
-
-                    if text == "Open_Palm" or text2 == "Open_Palm":
-                        ser.write(b"\x01")
-                        print("SHOOT!!!!!!")
-
-                first_box = False
+            if area > max_area:
+                max_area = area
+                max_box = box
 
             # put box in cam
             cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 255), 3)
@@ -189,6 +177,24 @@ while True:
             thickness = 2
 
             cv2.putText(frame, classNames[cls], org, font, fontScale, color, thickness)
+
+        if max_box is not None:
+            x1, y1, x2, y2 = max_box.xyxy[0]
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
+            with Serial("/dev/ttyACM0", 9600, timeout=1) as ser:
+                if (x1 + x2) / 2 > 325:
+                    ser.write(b"\xff")
+                    print("Move Left")
+                elif (x1 + x2) / 2 < 315:
+                    ser.write(b"\x77")
+                    print("Move Right")
+                else:
+                    ser.write(b"\x69")
+                    print("Stay")
+
+                if text == "Open_Palm" or text2 == "Open_Palm":
+                    ser.write(b"\x01")
+                    print("SHOOT!!!!!!")
 
     with mp_hands.Hands(
         model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5
