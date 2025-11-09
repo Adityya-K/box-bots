@@ -3,6 +3,8 @@
 
 #include "driver/mcpwm.h"
 #include "driver/uart.h"
+#include "driver/gpio.h"
+
 
 
 // MG996R Servo specifications
@@ -12,7 +14,7 @@
 #define SERVO_MIN_DEGREE           -90
 #define SERVO_MAX_DEGREE           90
 
-#define SERVO_PIN 13
+#define SERVO_PIN GPIO_NUM_13
 #define UART_NUM UART_NUM_0
 #define BUF_SIZE 1024
 
