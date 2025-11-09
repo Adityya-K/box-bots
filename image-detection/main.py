@@ -134,6 +134,7 @@ classNames = [
 time_stamp = time.time_ns() // 1000000
 count = 0
 while True:
+    count += 1
     ret, frame = stream.read()
     if not ret:
         print("No more stream")
@@ -179,7 +180,7 @@ while True:
 
             cv2.putText(frame, classNames[cls], org, font, fontScale, color, thickness)
 
-    if max_box is not None:
+    if max_box is not None and count % 10 == 0:
         x1, y1, x2, y2 = max_box.xyxy[0]
         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
         center = (x1 + x2) / 2
