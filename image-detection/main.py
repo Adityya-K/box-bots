@@ -192,7 +192,9 @@ while True:
                     ser.write(b"\x69")
                     print("Stay")
 
-                if text == "Open_Palm" or text2 == "Open_Palm":
+                if (text == "Open_Palm" or text2 == "Open_Palm") and (
+                    (x1 + x2) / 2 < 330 and (x1 + x2) / 2 > 310
+                ):
                     ser.write(b"\x01")
                     print("SHOOT!!!!!!")
 
