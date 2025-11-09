@@ -12,6 +12,7 @@
 #include "btn_led.h"
 #include "servo_rotate.h"
 #include "flywheel.h"
+#include "leftright_motor.h"
 
 // Define the GPIO pins
 #define LED_GPIO GPIO_NUM_15 
@@ -28,6 +29,7 @@ TaskHandle_t ledTaskHandle = NULL;
 TaskHandle_t ledTaskHandle2 = NULL;
 TaskHandle_t ledTaskHandle3 = NULL;
 TaskHandle_t ledTaskHandle4 = NULL;
+TaskHandle_t ledTaskHandle5 = NULL;
 
 const char *TAG = "APP";
 
@@ -102,5 +104,6 @@ xTaskCreate(flywheel_task, "flywheel_task", 2048, NULL, 4, &ledTaskHandle3);
 
 xTaskCreate(&servoRotate_task, "servoRotate_task", 2048, NULL, 5, &ledTaskHandle4);
 
+xTaskCreate(leftright_motor_task, "leftright_motor_task", 2048, NULL, 4, &ledTaskHandle5);
 
 }
