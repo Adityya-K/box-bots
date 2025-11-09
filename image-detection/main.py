@@ -181,19 +181,28 @@ while True:
         if max_box is not None:
             x1, y1, x2, y2 = max_box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
+            center = (x1 + x2) / 2
             with Serial("/dev/ttyUSB0", 9600, timeout=1) as ser:
-                if (x1 + x2) / 2 > 325:
+                if center > 420:
                     ser.write(b"\xff")
                     print("Move Left")
-                elif (x1 + x2) / 2 < 315:
+                elif center > 370:
+                    ser.write(b"\x00")
+                    print("Move Left Slow")
+
+                if center < 220:
+                    ser.write(b"\x00")
+                    print("Move Right Slow")
+                elif center < 270:
                     ser.write(b"\x77")
                     print("Move Right")
-                else:
+
+                if center > 270 and center < 370:
                     ser.write(b"\x69")
                     print("Stay")
 
                 if (text == "Open_Palm" or text2 == "Open_Palm") and (
-                    (x1 + x2) / 2 < 330 and (x1 + x2) / 2 > 310
+                    (x1 + x2) / 2 < 350 and (x1 + x2) / 2 > 290
                 ):
                     ser.write(b"\x01")
                     print("SHOOT!!!!!!")
