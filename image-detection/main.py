@@ -181,7 +181,7 @@ while True:
         if max_box is not None:
             x1, y1, x2, y2 = max_box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
-            with Serial("/dev/ttyACM0", 9600, timeout=1) as ser:
+            with Serial("/dev/ttyUSB0", 9600, timeout=1) as ser:
                 if (x1 + x2) / 2 > 325:
                     ser.write(b"\xff")
                     print("Move Left")
@@ -236,6 +236,9 @@ while True:
 
     cv2.imshow("Webcam", frame)
     if cv2.waitKey(1) == ord("q"):
+        with Serial("/dev/ttyUSB0", 9600, timeout=1) as ser:
+            ser.write(b"\x69")
+            print("Move Left")
         break
 
 stream.release()
